@@ -55,7 +55,7 @@ public class Asset {
         return nombreAsset;
     }
 
-    public void setnombreAsset(int nombreAsset) {
+    public void addnombreAsset(int nombreAsset) {
         this.nombreAsset += nombreAsset;
     }
     public void vendreAsset(int nombreAsset) {
@@ -67,5 +67,6 @@ public class Asset {
         System.out.println("   Code : "+getCode());
         System.out.println("   Prix Unitaire : "+getPrixUnitaire());
         System.out.println("   Type d'Actif : "+getTypeActif());
+        System.out.println("-----------------------------------");
     }
 }

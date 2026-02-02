@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Portfolio<V,Q,A> {
@@ -6,9 +7,9 @@ public class Portfolio<V,Q,A> {
     private List<A> assets;
 
     public Portfolio(){
-        this.valeurTotale = valeurTotale;
-        this.quantité = quantité;
-        this.assets = assets;
+        this.valeurTotale = null;
+        this.quantité = null;
+        this.assets = new ArrayList<>();
     }
 
     public V getValeurTotale() {

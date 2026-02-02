@@ -5,21 +5,15 @@ import java.util.Scanner;
 
 public class TradingPlatform {
     private ArrayList<Trader> traders;
-    private ArrayList<Stock> stocks;
     private ArrayList<Asset> assets;
 
     public TradingPlatform(){
         this.traders = new ArrayList<>();
-        this.stocks = new ArrayList<>();
         this.assets = new ArrayList<>();
     }
 
     public ArrayList<Trader> getTraders() {
         return traders;
-    }
-
-    public ArrayList<Stock> getStocks() {
-        return stocks;
     }
 
     public ArrayList<Asset> getAssets() {
@@ -33,7 +27,7 @@ public class TradingPlatform {
         System.out.println("  2. Crypto Currency");
         int choix = sc.nextInt();
         System.out.println("Entrez le Nom d’actif:");
-        String Nom = sc.nextLine();
+        String Nom = sc.next();
         System.out.println("Entrez le Code d’actif:");
         int Code = sc.nextInt();
         System.out.println("Entrez le prix Unitaire d’actif:");
@@ -54,7 +48,7 @@ public class TradingPlatform {
         String nom = sc.nextLine();
         System.out.println("entrer votre identifiant: ");
         int id = sc.nextInt();
-        double solde;
+        double solde = 0;
         do {
             System.out.println("Entrer un solde initial: ");
             solde = sc.nextDouble();
@@ -63,10 +57,10 @@ public class TradingPlatform {
             }
         } while (solde < 100);
 
-        Portfolio<Double, Integer,Asset> p = null;
+        Portfolio<Double, Integer,Asset> p = new Portfolio<>();
         p.setValeurTotale(solde);
         Trader trader = new Trader(id,nom,solde,p);
-        traders.add(trader);
+        getTraders().add(trader);
         System.out.println("Le trader a été ajouté avec succès.");
     }
 
@@ -77,30 +71,4 @@ public class TradingPlatform {
         }
     }
 
-    public void ConsulterPortefeuille(){
-        Scanner sc = new Scanner(System.in);
-        System.out.println("entrer votre identifiant: ");
-        int id = sc.nextInt();
-        boolean trouve = false;
-            for (Trader t : traders) {
-                if (t.getIdentifiant() == id) {
-                    trouve = true;
-                    System.out.println("Portefeuille : ");
-                    System.out.println("   Valeur Totale : "+t.getPortfolio().getValeurTotale());
-                    System.out.println("   Quantités associées : "+t.getPortfolio().getQuantité());
-                    System.out.println("   Actifs détenus : ");
-                    for (Asset a : t.getPortfolio().getAssets()){
-                        System.out.println(a.getNom()+" : ");
-                    }
-                    }
-                }
-        if (!trouve) {
-            System.out.println("Ce identifiant n'existe pas.");
-        }
-
-
-    }
-    public void HistoriqueTransactions(){
-
-    }
 }

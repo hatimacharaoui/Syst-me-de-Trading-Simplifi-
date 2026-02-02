@@ -5,6 +5,10 @@ public class Person {
         this.Identifiant = Identifiant;
         this.Nom = Nom;
     }
+    public Person() {
+        this.Identifiant = Identifiant;
+        this.Nom = Nom;
+    }
     public int getIdentifiant(){
         return Identifiant;
     }
