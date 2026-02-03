@@ -8,7 +8,6 @@ public class Main {
         Trader trader = new Trader();
         int choix = 0;
         do {
-            try {
 
                 System.out.println("=========  XTrade  =========");
                 System.out.println("1. Ajouter un actif");
@@ -54,9 +53,7 @@ public class Main {
                         System.out.println("-----------------------------------");
                         break;
                 }
-            } catch (Exception e) {
-                System.out.println("\nVeuillez entrer un nombre valide.");
-                choix = -1; }
+
 
         } while (choix != 0);
 

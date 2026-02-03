@@ -8,11 +8,12 @@ public class Transaction {
     private double prix;
     private LocalDate date;
 
-    public Transaction(String typeOpération, Asset actif, int quantité, double prix, LocalDate date) {
+    public Transaction(String typeOpération, Asset actif, int quantité, double prix) {
         TypeOpération = typeOpération;
         this.actif = actif;
         this.quantité = quantité;
         this.prix = prix;
+        this.date = LocalDate.now();
     }
 
     public String getTypeOpération() {

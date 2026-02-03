@@ -2,6 +2,7 @@ import com.sun.jdi.PrimitiveValue;
 import javax.sound.sampled.Port;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 
@@ -17,6 +18,8 @@ public class Trader extends Person{
         this.transactions = new ArrayList<>();
     }
     public Trader(){
+        this.portfolio = new Portfolio<>();
+        this.transactions = new ArrayList<>();
     }
     public double getSoldInitial(){
         return soldInitial;
@@ -116,8 +119,7 @@ public class Trader extends Person{
 
         System.out.println("L'Actif : "+ asset.getNom()+" a été achetée avec succès");
         //Historique transaction
-        LocalDate date = LocalDate.now();
-        Transaction tr = new Transaction("Achat",asset,nombre, asset.getPrixUnitaire(),date);
+        Transaction tr = new Transaction("Achat",asset,nombre, asset.getPrixUnitaire());
         trader.getTransactions().add(tr);
     }
 
@@ -152,43 +154,47 @@ public class Trader extends Person{
         System.out.println("Entrez le nombre d’unités à vendre:");
         int nombre = sc.nextInt();
 
-        Asset assetg = null;
-        for (Asset ag : t.getAssets()) {
-            if (code == ag.getCode()) {
-                assetg = ag;
-            }
-        }
-        int quantité = 0;
         boolean trouve1 = false;
-        for (Asset a : trader.getPortfolio().getAssets()) {
-            if (code == a.getCode()) {
+
+        for (int i = 0; i < trader.getPortfolio().getAssets().size(); i++) {
+            Asset a = trader.getPortfolio().getAssets().get(i);
+
+            if (a.getCode() == code) {
                 trouve1 = true;
-                if (nombre <= a.getnombreAsset()) {
-                    // set nombreAsset
-                    a.vendreAsset(nombre);
-                    // set ValeurTotal
-                    double newValeurTotal = (trader.getPortfolio().getValeurTotale() - (a.getPrixUnitaire() * nombre)) + (assetg.getPrixUnitaire() * nombre);
-                    trader.getPortfolio().setValeurTotale(newValeurTotal);
-                    // set quantité
-                    trader.getPortfolio().setQuantité(trader.getPortfolio().getQuantité() - nombre);
-                    // suprimer if quantité asset = 0
-                    if (a.getnombreAsset() == 0) {
-                        trader.getPortfolio().getAssets().remove(a);
-                    }
-                } else {
-                    System.out.println("Le nombre d’actifs à vendre est inférieur à celui que vous possédez.");
+                // Vérifier la quantité
+                if (nombre > a.getnombreAsset()) {
+                    System.out.println("Quantité insuffisante pour la vente.");
                     return;
                 }
+                // Vendre l'actif
+                a.vendreAsset(nombre);
+                // Mettre à jour la quantité totale
+                trader.getPortfolio().setQuantité(
+                        trader.getPortfolio().getQuantité() - nombre
+                );
+                // Mettre à jour le solde
+                trader.setSoldInitial(
+                        trader.getSoldInitial() + (a.getPrixUnitaire() * nombre)
+                );
+                // Mettre à jour la valeur totale
+                trader.getPortfolio().setValeurTotale(trader.getSoldInitial());
+                // Supprimer l’actif si quantité = 0
+                if (a.getnombreAsset() == 0) {
+                    trader.getPortfolio().getAssets().remove(i);
+                }
+                // Historique
+                trader.getTransactions().add(
+                        new Transaction("Vente", a, nombre, a.getPrixUnitaire())
+                );
+
+                System.out.println("Vente réussie : " + nombre + " " + a.getNom());
+                break;
             }
         }
-         if(!trouve1) {
+
+        if (!trouve1) {
             System.out.println("Aucun actif trouvé pour ce code.");
-            return;
         }
-        //Historique transaction
-        LocalDate date = LocalDate.now();
-        Transaction tr = new Transaction("Vente",assetg,nombre, assetg.getPrixUnitaire(),date);
-        trader.getTransactions().add(tr);
     }
 
     public void ConsulterPortefeuille(TradingPlatform t){
@@ -245,6 +251,7 @@ public class Trader extends Person{
         } while (!trouve);
 
         // affichage transaction
+        System.out.println("Historique des transactions : ");
         for (Transaction tra : trader.getTransactions()){
             System.out.println("Date : "+tra.getDate()+", Type d’opération : "+tra.getTypeOpération());
             System.out.println("Actif : "+tra.getActif().getNom());

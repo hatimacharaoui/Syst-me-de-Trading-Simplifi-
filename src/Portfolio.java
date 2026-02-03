@@ -3,12 +3,12 @@ import java.util.List;
 
 public class Portfolio<V,Q,A> {
     private V valeurTotale;
-    private Q quantité;
+    private int quantité;
     private List<A> assets;
 
     public Portfolio(){
         this.valeurTotale = null;
-        this.quantité = null;
+        this.quantité = 0;
         this.assets = new ArrayList<>();
     }
 
@@ -20,11 +20,11 @@ public class Portfolio<V,Q,A> {
         valeurTotale = valeur;
     }
 
-    public Q getQuantité() {
+    public int getQuantité() {
         return quantité;
     }
 
-    public void setQuantité(Q quantité) {
+    public void setQuantité(int quantité) {
         this.quantité = quantité;
     }
 
