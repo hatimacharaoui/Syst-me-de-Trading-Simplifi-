@@ -1,10 +1,8 @@
 import com.sun.jdi.PrimitiveValue;
 import javax.sound.sampled.Port;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Trader extends Person{
     private double soldInitial;
@@ -259,4 +257,230 @@ public class Trader extends Person{
             System.out.println("--------------------------------------");
         }
     }
-}
+
+    public void transactionsUnTrader(TradingPlatform t){
+        Scanner sc = new Scanner(System.in);
+        // verifier l'identifiant
+        Trader trader;
+        do {
+            System.out.println("Entrer votre Identifiant : ");
+            int id = sc.nextInt();
+            trader = t.getTraders().stream()
+                    .filter(tr -> tr.getIdentifiant() == id).findFirst().orElse(null);
+            if (trader == null){
+                System.out.println("Aucun Identifiant ne correspond à ce numéro.");
+            }
+        } while (trader == null);
+
+        // affichage transaction
+        System.out.println("Historique des transactions : ");
+        trader.getTransactions().stream().forEach( tra -> {
+            System.out.println("Date : "+tra.getDate()+", Type d’opération : "+tra.getTypeOpération());
+            System.out.println("Actif : "+tra.getActif().getNom());
+            System.out.println("Quantité : "+tra.getQuantité());
+            System.out.println("--------------------------------------");
+        });
+
+    }
+
+    public void transactionsUnTraderParType(TradingPlatform t){
+        Scanner sc = new Scanner(System.in);
+        // verifier l'identifiant
+        Trader trader = null;
+        do {
+            System.out.println("Entrer votre Identifiant : ");
+            int id = sc.nextInt();
+
+            trader = t.getTraders().stream()
+                    .filter(tr -> tr.getIdentifiant() == id).findFirst().orElse(null);
+
+            if (trader == null){
+                System.out.println("Aucun Identifiant ne correspond à ce numéro.");
+            }
+        } while (trader == null);
+
+        System.out.println("Entrer le type de transaction BUY/SELL : ");
+        String type  = sc.next();
+        System.out.println("Entrer le nom de l'actif financier (ex : BTC, EUR/USD): ");
+        String nom = sc.next();
+        System.out.println("Saisir la date de début (yyyy-MM-dd) : ");
+        String dateDebut = sc.next();
+        LocalDate debut = LocalDate.parse(dateDebut);
+
+        System.out.println("Saisir la date de fin (yyyy-MM-dd): ");
+        String dateFin = sc.next();
+        LocalDate fin = LocalDate.parse(dateFin);
+
+        List<Transaction> transaction = trader.getTransactions().stream().
+                filter(tr -> tr.getTypeOpération().equalsIgnoreCase(type)).filter( tr -> tr.getActif().getNom().equalsIgnoreCase(nom))
+                .filter(tr -> !tr.getDate().isAfter(fin) && !tr.getDate().isBefore(debut))
+                        .toList();
+
+        // affichage transaction
+        System.out.println("Historique des transactions : ");
+        transaction.stream().forEach( tra -> {
+            System.out.println("Date : "+tra.getDate()+", Type d’opération : "+tra.getTypeOpération());
+            System.out.println("Actif : "+tra.getActif().getNom());
+            System.out.println("Quantité : "+tra.getQuantité());
+            System.out.println("--------------------------------------");
+        });
+    }
+
+    public void transactionsParDateMontant(TradingPlatform t){
+        Scanner sc = new Scanner(System.in);
+        // verifier l'identifiant
+        Trader trader = null;
+        do {
+            System.out.println("Entrer votre Identifiant : ");
+            int id = sc.nextInt();
+
+            trader = t.getTraders().stream()
+                    .filter(tr -> tr.getIdentifiant() == id).findFirst().orElse(null);
+
+            if (trader == null){
+                System.out.println("Aucun Identifiant ne correspond à ce numéro.");
+            }
+        } while (trader == null);
+
+        List<Transaction> transactions1 = trader.getTransactions()
+                .stream().sorted((tr1,tr2) -> tr1.getDate().compareTo(tr2.getDate())).toList();
+
+        // affichage par date
+        System.out.println("Les transactions par date : ");
+        transactions1.stream().forEach( tra -> {
+            System.out.println("   Date : "+tra.getDate()+", Type d’opération : "+tra.getTypeOpération());
+            System.out.println("   Actif : "+tra.getActif().getNom());
+            System.out.println("   Quantité : "+tra.getQuantité());
+            System.out.println("--------------------------------------");
+        });
+
+        List<Transaction> transactions2 = trader.getTransactions()
+                .stream().sorted((tr1,tr2) -> Double.compare((tr1.getPrix()*tr1.getQuantité()),(tr2.getPrix())*tr2.getQuantité())).toList();
+
+        // affichage par montant
+        System.out.println("Les transactions par montant : ");
+        transactions2.stream().forEach( tra -> {
+            System.out.println("   Date : "+tra.getDate()+", Type d’opération : "+tra.getTypeOpération());
+            System.out.println("   Actif : "+tra.getActif().getNom());
+            System.out.println("   Quantité : "+tra.getQuantité());
+            System.out.println("--------------------------------------");
+        });
+    }
+
+    public void volumeTotalEchangeParActif(TradingPlatform t){
+        Scanner sc = new Scanner(System.in);
+        // verifier l'identifiant
+        Trader trader;
+        do {
+            System.out.println("Entrer votre Identifiant : ");
+            int id = sc.nextInt();
+
+            trader = t.getTraders().stream()
+                    .filter(tr -> tr.getIdentifiant() == id).findFirst().orElse(null);
+
+            if (trader == null){
+                System.out.println("Aucun Identifiant ne correspond à ce numéro.");
+            }
+        } while (trader == null);
+
+        // Volume total échangé
+        Trader finalTrader = trader;
+        t.getAssets().forEach(asset -> {
+            int total = finalTrader.getTransactions().stream().filter(tr -> tr.getActif().getCode() == asset.getCode())
+                    .mapToInt(tr -> tr.getQuantité()).sum();
+            System.out.println("Actif : "+asset.getNom()+" , Volume total échangé : "+total);
+        });
+
+        // Montant total Achat/Vente
+        System.out.println("Le montant total des achats et des ventes : ");
+        double montantTotalAchat = trader.getTransactions().stream()
+                .filter(tr -> tr.getTypeOpération() == "Achat")
+                .mapToDouble(tr -> tr.getPrix()*tr.getQuantité())
+                .sum();
+        double montantTotalVente = trader.getTransactions().stream()
+                .filter(tr -> tr.getTypeOpération() == "Vente")
+                .mapToDouble(tr -> tr.getPrix() * tr.getQuantité())
+                .sum();
+
+        System.out.println("Montant total Achat : "+montantTotalAchat);
+        System.out.println("Montant total vente : "+montantTotalVente);
+    }
+
+    public void volumeTotalEchangéParTrader(TradingPlatform t){
+        Scanner sc = new Scanner(System.in);
+        // verifier l'identifiant
+        Trader trader;
+        do {
+            System.out.println("Entrer votre Identifiant : ");
+            int id = sc.nextInt();
+
+            trader = t.getTraders().stream()
+                    .filter(tr -> tr.getIdentifiant() == id).findFirst().orElse(null);
+
+            if (trader == null){
+                System.out.println("Aucun Identifiant ne correspond à ce numéro.");
+            }
+        } while (trader == null);
+
+//        int total = trader.getTransactions().stream()
+//                .mapToInt(tr -> tr.getQuantité())
+//                .sum();
+
+        Map<String,Double> totale = t.getTraders().stream().collect(Collectors.toMap(tr -> tr.getNom(),
+                tr -> tr.getTransactions().stream().mapToDouble(tra -> tra.getQuantité()).sum()));
+
+        System.out.println("trader : "+trader.getNom()+" , volume total : "+totale);
+    }
+
+    public void nombreTotalOrdresPassés(TradingPlatform t) {
+        Scanner sc = new Scanner(System.in);
+        // verifier l'identifiant
+        Trader trader;
+        do {
+            System.out.println("Entrer votre Identifiant : ");
+            int id = sc.nextInt();
+
+            trader = t.getTraders().stream()
+                    .filter(tr -> tr.getIdentifiant() == id).findFirst().orElse(null);
+
+            if (trader == null) {
+                System.out.println("Aucun Identifiant ne correspond à ce numéro.");
+            }
+        } while (trader == null);
+
+        long ordreTotal = trader.getTransactions().stream().count();
+        System.out.println("trader : "+trader.getNom()+" , Ordres totales : "+ordreTotal);
+    }
+
+    public void topNombreTraders(TradingPlatform t) {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Entrer le top nombre de traders ");
+        int nombre = sc.nextInt();
+        List<Trader> traders = t.getTraders().stream().sorted((t1,t2) -> Integer.compare(
+                t2.getTransactions().stream().mapToInt(tr -> tr.getQuantité()).sum(),
+                t1.getTransactions().stream().mapToInt(tr -> tr.getQuantité()).sum()
+        )).limit(nombre).toList();
+
+        traders.stream().forEach(trader -> {
+
+        });
+    }
+
+    public void volumeTotalEchangéParInstrument(TradingPlatform t){
+
+        Map<String,Double> volume = t.getTraders().stream().flatMap(tr -> tr.getTransactions()
+                .stream()).collect(Collectors.groupingBy(tra -> tra.getActif().getNom(), Collectors.summingDouble(a -> a.getQuantité()*a.getPrix())));
+
+        volume.forEach((nom,volum)-> {
+            System.out.println("Nom : "+nom+", ");
+        });
+    }
+
+    public void IdentificationInstrumentPlusEchangé(TradingPlatform t){
+        Asset assetPlusEchanger = t.getAssets().stream().max((a1, a2) -> Integer.compare(
+                t.getTraders().stream().flatMap(trader -> trader.getTransactions().stream().filter(transaction -> transaction.getActif().getCode() == a1.getCode())).mapToInt(tr ->tr.getQuantité()).sum(),
+                t.getTraders().stream().flatMap(trader -> trader.getTransactions().stream().filter(transaction -> transaction.getActif().getCode() == a2.getCode())).mapToInt(tr -> tr.getQuantité()).sum()
+        )).orElse(null);
+    }
+
+    }
