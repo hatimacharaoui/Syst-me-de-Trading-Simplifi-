@@ -61,15 +61,15 @@ public class Trader extends Person{
         } while (!trouve);
         // liste Assets
         System.out.println("Liste des Actifs :");
-            System.out.println("Stock : ");
-            for (Asset a : t.getAssets()) {
-                if (a.getTypeActif().equals("Stock")) {
-                    System.out.println("   " + a.getNom() + ", code : " + a.getCode() + ", Prix Unitaire : " + a.getPrixUnitaire());
-                }
+        System.out.println("Stock : ");
+        for (Asset a : t.getAssets()) {
+            if (a.getTypeActif().equals("Stock")) {
+                System.out.println("   " + a.getNom() + ", code : " + a.getCode() + ", Prix Unitaire : " + a.getPrixUnitaire());
             }
+        }
 
-            System.out.println("Crypto Currency : ");
-                for (Asset a2 : t.getAssets()){
+        System.out.println("Crypto Currency : ");
+        for (Asset a2 : t.getAssets()){
             if (a2.getTypeActif().equals("Crypto Currency")){
                 System.out.println("   "+a2.getNom()+", code : "+a2.getCode()+", Prix Unitaire : "+a2.getPrixUnitaire());
             }
@@ -91,7 +91,7 @@ public class Trader extends Person{
                 }
                 break;
             }
-            }
+        }
         if (asset == null) {
             System.out.println("Aucun actif trouvé pour ce code.");
             return;
@@ -314,7 +314,7 @@ public class Trader extends Person{
         List<Transaction> transaction = trader.getTransactions().stream().
                 filter(tr -> tr.getTypeOpération().equalsIgnoreCase(type)).filter( tr -> tr.getActif().getNom().equalsIgnoreCase(nom))
                 .filter(tr -> !tr.getDate().isAfter(fin) && !tr.getDate().isBefore(debut))
-                        .toList();
+                .toList();
 
         // affichage transaction
         System.out.println("Historique des transactions : ");
@@ -367,7 +367,32 @@ public class Trader extends Person{
         });
     }
 
-    public void volumeTotalEchangeParActif(TradingPlatform t){
+    public void volumeTotalEchangeParActif(TradingPlatform t) {
+        Scanner sc = new Scanner(System.in);
+        // verifier l'identifiant
+        Trader trader;
+        do {
+            System.out.println("Entrer votre Identifiant : ");
+            int id = sc.nextInt();
+
+            trader = t.getTraders().stream()
+                    .filter(tr -> tr.getIdentifiant() == id).findFirst().orElse(null);
+
+            if (trader == null) {
+                System.out.println("Aucun Identifiant ne correspond à ce numéro.");
+            }
+        } while (trader == null);
+
+        // Volume total échangé
+        Trader finalTrader = trader;
+        Map<Asset, Double> Total = trader.getTransactions().stream().collect(Collectors.groupingBy(tr -> tr.getActif(), Collectors.summingDouble(tr -> tr.getQuantité())));
+
+        Total.forEach((asset, volume) -> {
+            System.out.println("Actif : " + asset.getNom() + " , Volume total échangé : " + volume);
+        });
+    }
+
+    public void MontantTotalEchangeParActif(TradingPlatform t){
         Scanner sc = new Scanner(System.in);
         // verifier l'identifiant
         Trader trader;
@@ -382,14 +407,6 @@ public class Trader extends Person{
                 System.out.println("Aucun Identifiant ne correspond à ce numéro.");
             }
         } while (trader == null);
-
-        // Volume total échangé
-        Trader finalTrader = trader;
-        t.getAssets().forEach(asset -> {
-            int total = finalTrader.getTransactions().stream().filter(tr -> tr.getActif().getCode() == asset.getCode())
-                    .mapToInt(tr -> tr.getQuantité()).sum();
-            System.out.println("Actif : "+asset.getNom()+" , Volume total échangé : "+total);
-        });
 
         // Montant total Achat/Vente
         System.out.println("Le montant total des achats et des ventes : ");
@@ -483,4 +500,41 @@ public class Trader extends Person{
         )).orElse(null);
     }
 
+    public void CalculMontantTotalBUYetSELL(TradingPlatform t){
+
+        Scanner sc = new Scanner(System.in);
+        // verifier l'identifiant
+        Trader trader;
+            System.out.println("Entrer votre Identifiant : ");
+            int id = sc.nextInt();
+
+            trader = t.getTraders().stream()
+                    .filter(tr -> tr.getIdentifiant() == id).findFirst().orElse(null);
+
+            if (trader == null) {
+                System.out.println("Aucun Identifiant ne correspond à ce numéro.");
+                return;
+            }
+            //return achat et vente du trader
+         Double TotalAchat = trader.getTransactions().stream().filter(tr->tr.getTypeOpération().equals("Achat")).mapToDouble(tr->tr.getQuantité()).sum();
+            Double TotalVente = trader.getTransactions().stream().filter(tr->tr.getTypeOpération().equals("Vente")).mapToDouble(tr->tr.getQuantité()).sum();
+
+        System.out.println("Nom : "+trader.getNom()+", TotalAchat : "+TotalAchat+", TotalVente : "+TotalVente);
+
+            // return List : nom, total
+        Map<String,Double> TotalBuy = t.getTraders().stream().collect(Collectors.toMap(tr-> tr.getNom(),tr->tr.getTransactions().stream().filter(tra->tra.getTypeOpération().equals("Achat")).mapToDouble(tra-> tra.getQuantité()).sum()));
+        Map<String,Double> TotalSell = t.getTraders().stream().collect(Collectors.toMap(tr->tr.getNom(),tr->tr.getTransactions().stream().filter(tra->tra.getTypeOpération().equals("Vente")).mapToDouble(tra->tra.getQuantité()).sum()));
+
+        System.out.println("List des Achat par trader : ");
+        TotalBuy.forEach((nom,Totalbay)->{
+            System.out.println("Nom : "+nom+", Total Achat : "+Totalbay);
+        });
+
+        System.out.println("List des Achat par trader : ");
+        TotalSell.forEach((nom,totalsell)->{
+            System.out.println("Nom : "+nom+", Total Achat : "+totalsell);
+        });
+
     }
+
+}
